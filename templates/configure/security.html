@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% from "_formhelpers.html" import render_field %}
+
+{% block title %}Security Settings - {{ site_name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h2 class="text-center mb-0">Security Settings</h2>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted text-center small mb-4">
+                        Configure security settings for OAuth2 authentication.
+                    </p>
+                    <form method="POST" action="{{ url_for('security_settings') }}" novalidate>
+                        {{ form.hidden_tag() }}
+                        {{ render_field(form.token_duration, value=form.token_duration.data) }}
+                        {{ render_field(form.refresh_token_duration, value=form.refresh_token_duration.data) }}
+                        {{ render_field(form.allowed_scopes, value=form.allowed_scopes.data) }}
+                        <div class="d-grid gap-2 mt-4">
+                            {{ form.submit(class="btn btn-primary btn-lg") }}
+                            <a href="{{ url_for('index') }}" class="btn btn-outline-secondary btn-lg">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

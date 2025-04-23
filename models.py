@@ -1,5 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
+from datetime import datetime
 
 database = SQLAlchemy()
 
@@ -16,10 +17,11 @@ class RegisteredApp(database.Model):
     tos_uri = database.Column(database.String(255))
     policy_uri = database.Column(database.String(255))
     jwks_uri = database.Column(database.String(255))
-    date_registered = database.Column(database.DateTime)
-    last_updated = database.Column(database.DateTime)
+    date_registered = database.Column(database.DateTime, default=datetime.utcnow)
+    last_updated = database.Column(database.DateTime, onupdate=datetime.utcnow)
+    is_test_app = database.Column(database.Boolean, default=False)
+    test_app_expires_at = database.Column(database.DateTime)
 
-    # Authlib ClientMixin methods
     def get_client_id(self):
         return self.client_id
 
@@ -33,12 +35,9 @@ class RegisteredApp(database.Model):
         return response_type == 'code'
 
     def check_grant_type(self, grant_type):
-        # Support authorization_code and refresh_token grants
         return grant_type in ['authorization_code', 'refresh_token']
 
     def check_endpoint_auth_method(self, method, endpoint):
-        # Support client_secret_post and client_secret_basic for token endpoint
-        # Currently, we support the same methods for all endpoints
         return method in ['client_secret_post', 'client_secret_basic']
 
     def get_allowed_scope(self, scopes):
@@ -47,11 +46,9 @@ class RegisteredApp(database.Model):
         return ' '.join(sorted(allowed.intersection(requested)))
 
     def set_client_secret(self, client_secret):
-        """Set and hash the client secret."""
         self.client_secret_hash = generate_password_hash(client_secret)
 
     def check_client_secret(self, client_secret):
-        """Verify the client secret against the stored hash."""
         return check_password_hash(self.client_secret_hash, client_secret)
 
 class OAuthToken(database.Model):
@@ -80,11 +77,16 @@ class AuthorizationCode(database.Model):
     issued_at = database.Column(database.Integer, nullable=False)
     expires_at = database.Column(database.Integer, nullable=False)
 
-    # Authlib AuthorizationCodeMixin methods
     def get_redirect_uri(self):
-        """Return the redirect URI associated with this authorization code."""
         return self.redirect_uri
 
     def get_scope(self):
-        """Return the scope associated with this authorization code."""
         return self.scope
+
+class Configuration(database.Model):
+    __tablename__ = 'configurations'
+    id = database.Column(database.Integer, primary_key=True)
+    key = database.Column(database.String(100), unique=True, nullable=False)
+    value = database.Column(database.Text, nullable=False)
+    description = database.Column(database.Text)
+    last_updated = database.Column(database.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

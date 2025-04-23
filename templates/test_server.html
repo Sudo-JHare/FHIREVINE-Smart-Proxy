@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% from "_formhelpers.html" import render_field %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h2 class="text-center mb-0">Test SMART Server</h2>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted text-center small mb-4">
+                        Test FHIRVINE as an OAuth2 server by simulating an external client.
+                    </p>
+                    <form method="POST" action="{{ url_for('test_server') }}" novalidate>
+                        {{ form.hidden_tag() }}
+                        {{ render_field(form.client_id) }}
+                        {{ render_field(form.client_secret) }}
+                        {{ render_field(form.redirect_uri) }}
+                        {{ render_field(form.scopes) }}
+                        <div class="d-grid gap-2 mt-4">
+                            {{ form.submit(class="btn btn-primary btn-lg") }}
+                            <a href="{{ url_for('app_gallery') }}" class="btn btn-outline-secondary">Cancel</a>
+                        </div>
+                    </form>
+                    {% if response_data %}
+                        <hr>
+                        <h5 class="mt-4">Server Test Response:</h5>
+                        <pre class="border p-3 bg-light" style="max-height: 400px; overflow-y: auto;">
+{{ response_data | tojson(indent=2) }}
+                        </pre>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

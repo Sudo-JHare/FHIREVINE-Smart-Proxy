@@ -1,6 +1,5 @@
 {% extends "base.html" %}
-{# Optional: Import form helpers if you create _formhelpers.html #}
-{# {% from "_formhelpers.html" import render_field %} #}
+{% from "_formhelpers.html" import render_field %}
 
 {% block content %}
 <div class="container mt-4">
@@ -13,101 +12,27 @@
                 <div class="card-body">
                     <p class="text-muted text-center small mb-4">
                         Register your application to use FHIRVINE as a SMART on FHIR SSO proxy.
-                        A Client ID and Client Secret will be generated upon successful registration.
+                        {% if is_test %}This is a test app and will expire in 24 hours.{% endif %}
                     </p>
-                    <form method="POST" action="{{ url_for('register_app') }}" novalidate>
-                        {{ form.hidden_tag() }} {# Include CSRF token #}
-
-                        {# --- Application Name --- #}
-                        <div class="mb-3">
-                            {{ form.app_name.label(class="form-label") }}
-                            {{ form.app_name(class="form-control" + (" is-invalid" if form.app_name.errors else "")) }}
-                            {% if form.app_name.errors %}
-                                <div class="invalid-feedback">
-                                    {% for error in form.app_name.errors %}<span>{{ error }}</span>{% endfor %}
-                                </div>
-                            {% endif %} {# Closes if form.app_name.errors #}
-                        </div>
-
-                        {# --- Redirect URIs --- #}
-                        <div class="mb-3">
-                            {{ form.redirect_uris.label(class="form-label") }} <small class="text-muted">({{ form.redirect_uris.description }})</small>
-                            {{ form.redirect_uris(class="form-control" + (" is-invalid" if form.redirect_uris.errors else ""), rows="3") }}
-                             {% if form.redirect_uris.errors %}
-                                <div class="invalid-feedback">
-                                    {% for error in form.redirect_uris.errors %}<span>{{ error }}</span>{% endfor %}
-                                </div>
-                            {% endif %} {# Closes if form.redirect_uris.errors #}
-                        </div>
-
-                        {# --- Scopes --- #}
-                        <div class="mb-3">
-                            {{ form.scopes.label(class="form-label") }} <small class="text-muted">({{ form.scopes.description }})</small>
-                            {{ form.scopes(class="form-control" + (" is-invalid" if form.scopes.errors else ""), rows="4") }}
-                             {% if form.scopes.errors %}
-                                <div class="invalid-feedback">
-                                    {% for error in form.scopes.errors %}<span>{{ error }}</span>{% endfor %}
-                                </div>
-                            {% endif %} {# Closes if form.scopes.errors #}
-                        </div>
-
-                         <hr>
-                         <p class="text-muted small">Optional Information:</p>
-
-                         {# --- Logo URI --- #}
-                         <div class="mb-3">
-                            {{ form.logo_uri.label(class="form-label") }} <small class="text-muted">({{ form.logo_uri.description }})</small>
-                            {{ form.logo_uri(class="form-control" + (" is-invalid" if form.logo_uri.errors else "")) }}
-                             {% if form.logo_uri.errors %}
-                                <div class="invalid-feedback">
-                                    {% for error in form.logo_uri.errors %}<span>{{ error }}</span>{% endfor %}
-                                </div>
-                            {% endif %} {# Closes if form.logo_uri.errors #}
-                        </div>
-
-                         {# --- Contacts --- #}
-                         <div class="mb-3">
-                            {{ form.contacts.label(class="form-label") }} <small class="text-muted">({{ form.contacts.description }})</small>
-                            {{ form.contacts(class="form-control" + (" is-invalid" if form.contacts.errors else ""), rows="2") }}
-                             {% if form.contacts.errors %}
-                                <div class="invalid-feedback">
-                                    {% for error in form.contacts.errors %}<span>{{ error }}</span>{% endfor %}
-                                </div>
-                            {% endif %} {# Closes if form.contacts.errors #}
-                        </div>
-
-                         {# --- Terms of Service URI --- #}
-                         <div class="mb-3">
-                            {{ form.tos_uri.label(class="form-label") }} <small class="text-muted">({{ form.tos_uri.description }})</small>
-                            {{ form.tos_uri(class="form-control" + (" is-invalid" if form.tos_uri.errors else "")) }}
-                             {% if form.tos_uri.errors %}
-                                <div class="invalid-feedback">
-                                    {% for error in form.tos_uri.errors %}<span>{{ error }}</span>{% endfor %}
-                                </div>
-                            {% endif %} {# Closes if form.tos_uri.errors #}
-                        </div>
-
-                         {# --- Privacy Policy URI --- #}
-                         <div class="mb-3">
-                            {{ form.policy_uri.label(class="form-label") }} <small class="text-muted">({{ form.policy_uri.description }})</small>
-                            {{ form.policy_uri(class="form-control" + (" is-invalid" if form.policy_uri.errors else "")) }}
-                             {% if form.policy_uri.errors %}
-                                <div class="invalid-feedback">
-                                    {% for error in form.policy_uri.errors %}<span>{{ error }}</span>{% endfor %}
-                                </div>
-                            {% endif %} {# Closes if form.policy_uri.errors #}
-                        </div>
-
-                        {# --- Submit Buttons --- #}
+                    <form method="POST" action="{{ url_for('register_app', test='1' if is_test else '0') }}" novalidate>
+                        {{ form.hidden_tag() }}
+                        {{ render_field(form.app_name) }}
+                        {{ render_field(form.redirect_uris, rows=3) }}
+                        {{ render_field(form.scopes, rows=4) }}
+                        <hr>
+                        <p class="text-muted small">Optional Information:</p>
+                        {{ render_field(form.logo_uri, autocomplete="off") }}
+                        {{ render_field(form.contacts, rows=2, autocomplete="off") }}
+                        {{ render_field(form.tos_uri, autocomplete="off") }}
+                        {{ render_field(form.policy_uri, autocomplete="off") }}
                         <div class="d-grid gap-2 mt-4">
-                             {{ form.submit(class="btn btn-primary btn-lg") }}
-                             <a href="{{ url_for('app_gallery') }}" class="btn btn-outline-secondary">Cancel</a>
+                            {{ form.submit(class="btn btn-primary btn-lg") }}
+                            <a href="{{ url_for('app_gallery') }}" class="btn btn-outline-secondary">Cancel</a>
                         </div>
-                    </form> {# Closes form tag #}
-                </div> {# Closes card-body #}
-            </div> {# Closes card #}
-        </div> {# Closes col #}
-    </div> {# Closes row #}
-</div> {# Closes container #}
-{% endblock %} {# Closes block content #}
-
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

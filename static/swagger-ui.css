@@ -1,0 +1,78 @@
+/* FHIRVINE Swagger UI Custom Styles */
+
+/* Override Swagger UI background and text colors */
+body {
+    background-color: #f8f9fa !important; /* Light gray background */
+    font-family: 'Roboto', sans-serif !important; /* Modern font */
+    color: #333 !important; /* Dark text for readability */
+}
+
+/* Customize the top bar */
+.topbar {
+    background-color: #343a40 !important; /* Dark gray top bar */
+    border-bottom: 2px solid #007bff !important; /* Blue accent */
+}
+
+.topbar-wrapper .link {
+    color: #ffffff !important; /* White text for logo/title */
+}
+
+.topbar-wrapper img {
+    display: none; /* Hide default Swagger logo */
+}
+
+.topbar-wrapper .link::before {
+    content: "FHIRVINE API Docs";
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+/* Customize the info section */
+.info .title {
+    color: #007bff !important; /* Blue title */
+    font-weight: bold;
+}
+
+.info .description, .info .version {
+    color: #555 !important; /* Darker gray for description */
+}
+
+/* Customize operation blocks */
+.opblock-tag {
+    color: #007bff !important; /* Blue for tags */
+    border-bottom: 1px solid #dee2e6 !important;
+}
+
+.opblock-summary-method {
+    background-color: #28a745 !important; /* Green for methods (e.g., GET) */
+    color: #fff !important;
+}
+
+.opblock-summary-path {
+    color: #333 !important;
+}
+
+.opblock.is-open .opblock-summary {
+    background-color: #e9ecef !important; /* Light gray for expanded blocks */
+}
+
+/* Customize buttons and inputs */
+.btn, .btn:hover {
+    background-color: #007bff !important;
+    color: #fff !important;
+    border: none !important;
+}
+
+.input__field, .textarea {
+    border: 1px solid #ced4da !important;
+    border-radius: 0.25rem !important;
+}
+
+/* Customize the response section */
+.response-col_status {
+    color: #28a745 !important; /* Green for status codes */
+}
+
+.response-col_description {
+    color: #555 !important;
+}

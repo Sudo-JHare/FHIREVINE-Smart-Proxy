@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "_formhelpers.html" import render_field %}
 
 {% block content %}
 <div class="container mt-4">
@@ -11,83 +12,13 @@
                 <div class="card-body">
                     <form method="POST" action="{{ url_for('edit_app', app_id=app.id) }}" novalidate>
                         {{ form.hidden_tag() }}
-
-                        <div class="mb-3">
-                            {{ form.app_name.label(class="form-label") }}
-                            {{ form.app_name(class="form-control " + ("is-invalid" if form.app_name.errors else ""), value=app.app_name) }}
-                            {% if form.app_name.errors %}
-                                <div class="invalid-feedback">
-                                    {% for error in form.app_name.errors %}<span>{{ error }}</span>{% endfor %}
-                                </div>
-                            {% endif %}
-                        </div>
-
-                        <div class="mb-3">
-                            {{ form.redirect_uris.label(class="form-label") }}
-                            {{ form.redirect_uris(class="form-control " + ("is-invalid" if form.redirect_uris.errors else ""), value=app.redirect_uris) }}
-                            {% if form.redirect_uris.errors %}
-                                <div class="invalid-feedback">
-                                    {% for error in form.redirect_uris.errors %}<span>{{ error }}</span>{% endfor %}
-                                </div>
-                            {% endif %}
-                            <small class="form-text text-muted">{{ form.redirect_uris.description }}</small>
-                        </div>
-
-                        <div class="mb-3">
-                            {{ form.scopes.label(class="form-label") }}
-                            {{ form.scopes(class="form-control " + ("is-invalid" if form.scopes.errors else ""), value=app.scopes) }}
-                            {% if form.scopes.errors %}
-                                <div class="invalid-feedback">
-                                    {% for error in form.scopes.errors %}<span>{{ error }}</span>{% endfor %}
-                                </div>
-                            {% endif %}
-                            <small class="form-text text-muted">{{ form.scopes.description }}</small>
-                        </div>
-
-                        <div class="mb-3">
-                            {{ form.logo_uri.label(class="form-label") }}
-                            {{ form.logo_uri(class="form-control " + ("is-invalid" if form.logo_uri.errors else ""), value=app.logo_uri) }}
-                            {% if form.logo_uri.errors %}
-                                <div class="invalid-feedback">
-                                    {% for error in form.logo_uri.errors %}<span>{{ error }}</span>{% endfor %}
-                                </div>
-                            {% endif %}
-                            <small class="form-text text-muted">{{ form.logo_uri.description }}</small>
-                        </div>
-
-                        <div class="mb-3">
-                            {{ form.contacts.label(class="form-label") }}
-                            {{ form.contacts(class="form-control " + ("is-invalid" if form.contacts.errors else ""), value=app.contacts) }}
-                            {% if form.contacts.errors %}
-                                <div class="invalid-feedback">
-                                    {% for error in form.contacts.errors %}<span>{{ error }}</span>{% endfor %}
-                                </div>
-                            {% endif %}
-                            <small class="form-text text-muted">{{ form.contacts.description }}</small>
-                        </div>
-
-                        <div class="mb-3">
-                            {{ form.tos_uri.label(class="form-label") }}
-                            {{ form.tos_uri(class="form-control " + ("is-invalid" if form.tos_uri.errors else ""), value=app.tos_uri) }}
-                            {% if form.tos_uri.errors %}
-                                <div class="invalid-feedback">
-                                    {% for error in form.tos_uri.errors %}<span>{{ error }}</span>{% endfor %}
-                                </div>
-                            {% endif %}
-                            <small class="form-text text-muted">{{ form.tos_uri.description }}</small>
-                        </div>
-
-                        <div class="mb-3">
-                            {{ form.policy_uri.label(class="form-label") }}
-                            {{ form.policy_uri(class="form-control " + ("is-invalid" if form.policy_uri.errors else ""), value=app.policy_uri) }}
-                            {% if form.policy_uri.errors %}
-                                <div class="invalid-feedback">
-                                    {% for error in form.policy_uri.errors %}<span>{{ error }}</span>{% endfor %}
-                                </div>
-                            {% endif %}
-                            <small class="form-text text-muted">{{ form.policy_uri.description }}</small>
-                        </div>
-
+                        {{ render_field(form.app_name, value=app.app_name) }}
+                        {{ render_field(form.redirect_uris, value=app.redirect_uris, rows=3) }}
+                        {{ render_field(form.scopes, value=app.scopes, rows=4) }}
+                        {{ render_field(form.logo_uri, value=app.logo_uri, autocomplete="off") }}
+                        {{ render_field(form.contacts, value=app.contacts, rows=2, autocomplete="off") }}
+                        {{ render_field(form.tos_uri, value=app.tos_uri, autocomplete="off") }}
+                        {{ render_field(form.policy_uri, value=app.policy_uri, autocomplete="off") }}
                         <div class="d-grid gap-2 mt-4">
                             {{ form.submit(class="btn btn-primary btn-lg") }}
                             <a href="{{ url_for('app_gallery') }}" class="btn btn-outline-secondary">Cancel</a>

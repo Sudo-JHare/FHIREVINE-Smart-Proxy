@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% from "_formhelpers.html" import render_field %}
+
+{% block title %}Server Endpoints - {{ site_name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h2 class="text-center mb-0">Server Endpoints</h2>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted text-center small mb-4">
+                        Configure endpoints for the upstream FHIR server and view available SMART endpoints.
+                    </p>
+                    <form method="POST" action="{{ url_for('server_endpoints') }}" novalidate>
+                        {{ form.hidden_tag() }}
+                        {{ render_field(form.metadata_endpoint) }}
+                        {{ render_field(form.capability_endpoint) }}
+                        {{ render_field(form.resource_base_endpoint) }}
+                        <div class="d-grid gap-2 mt-4">
+                            {{ form.submit(class="btn btn-primary btn-lg") }}
+                            <a href="{{ url_for('index') }}" class="btn btn-outline-secondary btn-lg">Cancel</a>
+                        </div>
+                    </form>
+                    <hr class="my-4">
+                    <h5>Available SMART Endpoints</h5>
+                    <ul class="list-group mb-4">
+                        <li class="list-group-item"><strong>Configuration:</strong> <code>/.well-known/smart-configuration</code> - SMART on FHIR discovery</li>
+                        <li class="list-group-item"><strong>Authorization:</strong> <code>/oauth2/authorize</code> - Initiate OAuth2 flow</li>
+                        <li class="list-group-item"><strong>Token:</strong> <code>/oauth2/token</code> - Exchange code for token</li>
+                        <li class="list-group-item"><strong>Revoke:</strong> <code>/oauth2/revoke</code> - Revoke tokens</li>
+                        <li class="list-group-item"><strong>Introspect:</strong> <code>/oauth2/introspect</code> - Verify token status</li>
+                        <li class="list-group-item"><strong>FHIR Proxy:</strong> <code>/oauth2/proxy/<path></code> - Proxy FHIR requests</li>
+                    </ul>
+                    <div class="text-center">
+                        <a href="{{ url_for('custom_apidocs') }}" class="btn btn-primary">View API Documentation</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

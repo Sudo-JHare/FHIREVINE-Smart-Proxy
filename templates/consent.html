@@ -1,48 +1,31 @@
 {% extends "base.html" %}
 
-{% block title %}Authorize {{ client.app_name }} - {{ site_name }}{% endblock %}
-
 {% block content %}
-<div class="container mt-5">
+<div class="container mt-4">
     <div class="row justify-content-center">
         <div class="col-md-8 col-lg-6">
             <div class="card shadow-sm">
-                <div class="card-header text-center">
-                    <h2 class="mb-0">Authorize Application</h2>
+                <div class="card-header">
+                    <h2 class="text-center mb-0">Authorize {{ client.app_name }}</h2>
                 </div>
                 <div class="card-body">
-                    <p class="text-center">
-                        <strong>{{ client.app_name }}</strong> is requesting access to your data.
+                    <p class="text-muted text-center small mb-4">
+                        The application <strong>{{ client.app_name }}</strong> is requesting access to your FHIR data.
                     </p>
-                    <h5 class="mt-4">Permissions Requested:</h5>
+                    <h5 class="mb-3">Scopes Requested:</h5>
                     <ul class="list-group mb-4">
                         {% for scope in scopes %}
-                            <li class="list-group-item">
-                                <strong>{{ scope }}</strong>
-                                <p class="mb-0 text-muted">
-                                    {% if scope == "openid" %}
-                                        Access your identity information.
-                                    {% elif scope == "profile" %}
-                                        Access your user profile information.
-                                    {% elif scope == "launch" %}
-                                        Launch the application with context.
-                                    {% elif scope == "launch/patient" %}
-                                        Launch the application with patient context.
-                                    {% elif scope == "patient/*.read" %}
-                                        Read all patient data.
-                                    {% else %}
-                                        Custom scope permission.
-                                    {% endif %}
-                                </p>
-                            </li>
+                            <li class="list-group-item">{{ scope }}</li>
                         {% endfor %}
                     </ul>
-                    <form method="POST" action="{{ url_for('smart_proxy.handle_consent') }}">
-                        <div class="d-flex justify-content-between">
-                            <button type="submit" name="consent" value="allow" class="btn btn-primary">
+                    <form method="POST" action="{{ url_for('smart_proxy.handle_consent') }}" novalidate>
+                        {{ form.hidden_tag() }}
+                        <input type="hidden" name="consent" id="consent_value">
+                        <div class="d-flex justify-content-between gap-2">
+                            <button type="submit" class="btn btn-primary" onclick="document.getElementById('consent_value').value='allow'">
                                 <i class="bi bi-check-circle-fill me-1"></i> Allow
                             </button>
-                            <button type="submit" name="consent" value="deny" class="btn btn-secondary">
+                            <button type="submit" class="btn btn-secondary" onclick="document.getElementById('consent_value').value='deny'">
                                 <i class="bi bi-x-circle-fill me-1"></i> Deny
                             </button>
                         </div>

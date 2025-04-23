@@ -10,31 +10,53 @@
                 </div>
                 <div class="card-body">
                     <p class="text-muted text-center small mb-4">
-                        Select a registered application to test its SMART on FHIR launch.
+                        Select a registered application to test its SMART on FHIR launch or register a test app.
                     </p>
                     <form method="POST" action="{{ url_for('test_client') }}" novalidate>
                         {{ form.hidden_tag() }}
-
                         <div class="mb-3">
                             {{ form.client_id.label(class="form-label") }}
-                            <select name="client_id" class="form-control {{ 'is-invalid' if form.client_id.errors else '' }}" required>
-                                <option value="" disabled selected>Select an application</option>
-                                {% for app in apps %}
-                                    <option value="{{ app.client_id }}">{{ app.app_name }} ({{ app.client_id }})</option>
-                                {% endfor %}
+                            <select name="client_id" class="form-control {{ 'is-invalid' if form.client_id.errors else '' }}" required aria-describedby="client_id_help">
+                                <option value="" disabled {% if not form.client_id.data %}selected{% endif %}>Select an application</option>
+                                {% if apps %}
+                                    {% for app in apps %}
+                                        <option value="{{ app.client_id }}" {% if form.client_id.data == app.client_id %}selected{% endif %}>{{ app.app_name }} ({{ app.client_id }}) {% if app.is_test_app %}[Test]{% endif %}</option>
+                                    {% endfor %}
+                                {% else %}
+                                    <option value="" disabled>No applications available</option>
+                                {% endif %}
                             </select>
+                            <small id="client_id_help" class="form-text text-muted">Choose an app to test its OAuth2 flow.</small>
                             {% if form.client_id.errors %}
                                 <div class="invalid-feedback">
                                     {% for error in form.client_id.errors %}<span>{{ error }}</span>{% endfor %}
                                 </div>
                             {% endif %}
                         </div>
-
+                        <div class="mb-3">
+                            {{ form.response_mode.label(class="form-label") }}
+                            <div>
+                                {% for subfield in form.response_mode %}
+                                    <div class="form-check form-check-inline">
+                                        {{ subfield(class="form-check-input") }}
+                                        {{ subfield.label(class="form-check-label") }}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
                         <div class="d-grid gap-2 mt-4">
                             {{ form.submit(class="btn btn-primary btn-lg") }}
+                            <a href="{{ url_for('register_app', test='1') }}" class="btn btn-outline-success">Register Test App</a>
                             <a href="{{ url_for('app_gallery') }}" class="btn btn-outline-secondary">Cancel</a>
                         </div>
                     </form>
+                    {% if response_data %}
+                        <hr>
+                        <h5 class="mt-4">Test Response:</h5>
+                        <pre class="border p-3 bg-light" style="max-height: 400px; overflow-y: auto;">
+{{ response_data | tojson(indent=2) }}
+                        </pre>
+                    {% endif %}
                 </div>
             </div>
         </div>

@@ -1,0 +1,16 @@
+{% macro render_field(field, value=None, rows=None, autocomplete=None) %}
+<div class="mb-3">
+    {{ field.label(class="form-label") }}
+    {% if field.type == "TextAreaField" %}
+        {{ field(class="form-control " + ("is-invalid" if field.errors else ""), value=value or '', rows=rows or 3, autocomplete=autocomplete) }}
+    {% else %}
+        {{ field(class="form-control " + ("is-invalid" if field.errors else ""), value=value or '', autocomplete=autocomplete) }}
+    {% endif %}
+    {% if field.errors %}
+        <div class="invalid-feedback">
+            {% for error in field.errors %}<span>{{ error }}</span>{% endfor %}
+        </div>
+    {% endif %}
+    <small class="form-text text-muted">{{ field.description }}</small>
+</div>
+{% endmacro %}
