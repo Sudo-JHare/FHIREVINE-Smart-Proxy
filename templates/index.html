@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="px-4 py-5 my-5 text-center">
+    <i class="bi bi-lock-fill" style="font-size: 4rem; color: var(--bs-primary);"></i> <h1 class="display-5 fw-bold text-body-emphasis mt-3">Welcome to {{ site_name }}</h1>
+    <div class="col-lg-6 mx-auto">
+        <p class="lead mb-4">
+            A modular SMART on FHIR Single Sign-On (SSO) Proxy. Register applications, test client launches, and manage connections.
+        </p>
+        <div class="d-grid gap-2 d-sm-flex justify-content-sm-center flex-wrap">
+            <a href="{{ url_for('app_gallery') }}" class="btn btn-primary btn-lg px-4 gap-3 mb-2">View App Gallery</a>
+            <a href="{{ url_for('register_app') }}" class="btn btn-outline-success btn-lg px-4 mb-2">Register New App</a>
+            <a href="{{ url_for('test_client') }}" class="btn btn-outline-info btn-lg px-4 mb-2">Test Client Launch</a>
+            </div>
+    </div>
+</div>
+
+{% endblock %}

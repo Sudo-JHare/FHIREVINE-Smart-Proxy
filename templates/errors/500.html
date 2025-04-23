@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="alert alert-danger text-center" role="alert">
+                <h4 class="alert-heading"><i class="bi bi-exclamation-triangle-fill me-2"></i>Internal Server Error</h4>
+                <p>Something went wrong on our end. Please try again later.</p>
+                <hr>
+                <a href="{{ url_for('index') }}" class="btn btn-secondary">Return Home</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

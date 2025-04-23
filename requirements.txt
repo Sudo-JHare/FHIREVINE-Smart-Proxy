@@ -1,0 +1,10 @@
+Flask==2.3.3
+Flask-SQLAlchemy==3.0.5
+Flask-WTF==1.1.1
+Flask-Migrate==4.0.7
+flasgger==v0.9.7b2
+Authlib==1.5.2
+requests==2.31.0
+python-dotenv==1.0.1
+werkzeug==2.3.8
+waitress==3.0.0

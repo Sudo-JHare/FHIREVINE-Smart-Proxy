@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-okaidia.min.css" rel="stylesheet" />
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <title>{% if title %}{{ title }} - {% endif %}{{ site_name }}</title>
+    <style>
+        /* Inherit most styles from FHIRFLARE's base.html */
+        /* Default (Light Theme) Styles */
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f8f9fa;
+            color: #212529;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            margin: 0;
+        }
+        main {
+            flex-grow: 1;
+        }
+        h1, h5 {
+            font-weight: 600;
+        }
+        .navbar-light {
+            background-color: #ffffff !important;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .navbar-brand {
+            font-weight: bold;
+            color: #0d6efd !important; /* Standard Bootstrap Blue */
+        }
+        .nav-link {
+            color: #333 !important;
+            transition: color 0.2s ease;
+        }
+        .nav-link:hover {
+            color: #0d6efd !important;
+        }
+        .nav-link.active {
+            color: #0d6efd !important;
+            font-weight: bold;
+            border-bottom: 2px solid #0d6efd;
+        }
+        /* ... (Keep other styles like dropdown, card, footer, alerts from FHIRFLARE base.html) ... */
+         .dropdown-menu {
+            list-style: none !important;
+            position: absolute;
+            background-color: #ffffff;
+            border: none;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            padding: 0;
+            min-width: 160px;
+            z-index: 1000;
+        }
+        .dropdown-item {
+            padding: 0.5rem 1rem;
+            transition: background-color 0.2s ease;
+        }
+        .dropdown-item:hover {
+            background-color: #e9ecef;
+        }
+        .dropdown-item.active {
+            background-color: #007bff;
+            color: white !important;
+        }
+        .card {
+            background-color: #ffffff;
+            border-radius: 10px;
+            overflow: hidden;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15) !important;
+        }
+        .text-muted {
+            color: #6c757d !important;
+        }
+         /* Footer Styles */
+        footer {
+            background-color: #ffffff;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            border-top: 1px solid #e0e0e0;
+            margin-top: auto; /* Push footer to bottom */
+        }
+        .footer-left,
+        .footer-right {
+            display: inline-flex;
+            gap: 0.75rem;
+            align-items: center;
+        }
+        .footer-left a,
+        .footer-right a {
+            color: #007bff;
+            text-decoration: none;
+            font-size: 0.85rem;
+        }
+        .footer-left a:hover,
+        .footer-right a:hover {
+            text-decoration: underline;
+        }
+
+        /* Alert Styles */
+        .alert { border-radius: 8px; }
+        .alert-danger { background-color: #f8d7da; color: #721c24; border-color: #f5c6cb; }
+        .alert-success { background-color: #d4edda; color: #155724; border-color: #c3e6cb; }
+        .alert-info { background-color: #d1ecf1; color: #0c5460; border-color: #bee5eb; }
+        .alert-warning { background-color: #fff3cd; color: #856404; border-color: #ffeeba;}
+
+
+        /* Theme Toggle Styles */
+         .navbar-controls {
+            gap: 0.5rem;
+            padding-right: 0;
+        }
+         .form-check-input {
+            width: 1.25rem !important;
+            height: 1.25rem !important;
+            margin-top: 0.25rem;
+            display: inline-block !important;
+            border: 1px solid #6c757d;
+        }
+        .form-check-input:checked {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+        .form-check-label {
+            font-size: 1rem;
+            margin-left: 0.5rem;
+            vertical-align: middle;
+        }
+        .form-check-label i {
+            font-size: 1.2rem;
+            margin-left: 0.5rem;
+        }
+        .form-check {
+            margin-bottom: 1rem; /* Or adjust as needed */
+        }
+
+        /* Prism JS overrides if needed */
+        /* (Copy relevant Prism theme overrides from FHIRFLARE base.html if desired) */
+         /* --- Prism.js Theme Overrides for Light Mode --- */
+        html:not([data-theme="dark"]) .token.punctuation,
+        html:not([data-theme="dark"]) .token.operator,
+        html:not([data-theme="dark"]) .token.entity,
+        html:not([data-theme="dark"]) .token.url,
+        html:not([data-theme="dark"]) .token.symbol,
+        html:not([data-theme="dark"]) .token.number,
+        html:not([data-theme="dark"]) .token.boolean,
+        html:not([data-theme="dark"]) .token.variable,
+        html:not([data-theme="dark"]) .token.constant,
+        html:not([data-theme="dark"]) .token.property,
+        html:not([data-theme="dark"]) .token.regex,
+        html:not([data-theme="dark"]) .token.inserted,
+        html:not([data-theme="dark"]) .token.null, /* Target null specifically */
+        html:not([data-theme="dark"]) .language-css .token.string,
+        html:not([data-theme="dark"]) .style .token.string,
+        html:not([data-theme="dark"]) .token.important,
+        html:not([data-theme="dark"]) .token.bold {
+             color: #333 !important;
+        }
+        html:not([data-theme="dark"]) .token.string {
+            color: #005cc5 !important;
+        }
+         html:not([data-theme="dark"]) pre[class*="language-"] {
+              background: #e9ecef !important;
+         }
+         html:not([data-theme="dark"]) :not(pre) > code[class*="language-"] {
+              background: #e9ecef !important;
+              color: #333 !important;
+         }
+        /* --- End Prism.js Overrides --- */
+
+        /* --- Dark Theme Overrides --- */
+        /* (Copy relevant Dark theme overrides from FHIRFLARE base.html) */
+        html[data-theme="dark"] body { background-color: #212529; color: #f8f9fa; }
+        html[data-theme="dark"] .navbar-light { background-color: #343a40 !important; border-bottom: 1px solid #495057; }
+        html[data-theme="dark"] .navbar-brand { color: #4dabf7 !important; }
+        html[data-theme="dark"] .nav-link { color: #f8f9fa !important; }
+        html[data-theme="dark"] .nav-link:hover, html[data-theme="dark"] .nav-link.active { color: #4dabf7 !important; border-bottom-color: #4dabf7; }
+        html[data-theme="dark"] .dropdown-menu { background-color: #495057; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); }
+        html[data-theme="dark"] .dropdown-item { color: #f8f9fa; }
+        html[data-theme="dark"] .dropdown-item:hover { background-color: #6c757d; }
+        html[data-theme="dark"] .dropdown-item.active { background-color: #4dabf7; color: white !important; }
+        html[data-theme="dark"] .card { background-color: #343a40; border: 1px solid #495057; }
+        html[data-theme="dark"] .text-muted { color: #adb5bd !important; }
+        html[data-theme="dark"] h1, html[data-theme="dark"] h5 { color: #f8f9fa; }
+        html[data-theme="dark"] .form-label { color: #f8f9fa; }
+        html[data-theme="dark"] .form-control, html[data-theme="dark"] .form-select { background-color: #495057; color: #f8f9fa; border-color: #6c757d; }
+        html[data-theme="dark"] .form-control::placeholder { color: #adb5bd; }
+        html[data-theme="dark"] .alert-danger { background-color: #dc3545; color: white; border-color: #dc3545; }
+        html[data-theme="dark"] .alert-success { background-color: #198754; color: white; border-color: #198754; }
+        html[data-theme="dark"] .alert-info { background-color: #0dcaf0; color: #000; border-color: #0dcaf0; } /* Adjusted info for dark */
+        html[data-theme="dark"] .alert-warning { background-color: #ffc107; color: #000; border-color: #ffc107; } /* Adjusted warning for dark */
+        html[data-theme="dark"] .form-check-input { border-color: #adb5bd; }
+        html[data-theme="dark"] .form-check-input:checked { background-color: #4dabf7; border-color: #4dabf7; }
+        html[data-theme="dark"] footer { background-color: #343a40; border-top: 1px solid #495057; }
+        html[data-theme="dark"] .footer-left a, html[data-theme="dark"] .footer-right a { color: #4dabf7; }
+
+        /* Responsive adjustments */
+         @media (max-width: 576px) {
+            .navbar-controls { flex-direction: column; align-items: stretch; width: 100%; }
+            .navbar-controls .form-check { margin-bottom: 0.5rem; }
+            footer { height: auto; padding: 0.5rem; flex-direction: column; gap: 0.5rem; }
+            .footer-left, .footer-right { flex-direction: column; text-align: center; gap: 0.5rem; }
+            .footer-left a, .footer-right a { font-size: 0.8rem; }
+        }
+
+    </style>
+</head>
+<body class="d-flex flex-column min-vh-100">
+    <nav class="navbar navbar-expand-lg navbar-light">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{{ url_for('index') }}">{{ site_name }}</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse d-flex justify-content-between" id="navbarNav">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link {{ 'active' if request.endpoint == 'index' else '' }}" aria-current="page" href="{{ url_for('index') }}"><i class="bi bi-house-door-fill me-1"></i> Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ 'active' if request.endpoint == 'app_gallery' else '' }}" href="{{ url_for('app_gallery') }}"><i class="bi bi-grid-fill me-1"></i> App Gallery</a>
+                    </li>
+                     <li class="nav-item">
+                        <a class="nav-link {{ 'active' if request.endpoint == 'register_app' else '' }}" href="{{ url_for('register_app') }}"><i class="bi bi-plus-square-fill me-1"></i> Register App</a>
+                    </li>
+                     <li class="nav-item">
+                        <a class="nav-link {{ 'active' if request.endpoint == 'test_client' else '' }}" href="{{ url_for('test_client') }}"><i class="bi bi-play-circle-fill me-1"></i> Test Client Launch</a>
+                    </li>
+                     <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownConfig" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                           <i class="bi bi-gear-fill me-1"></i> Configure
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="navbarDropdownConfig">
+                            <li><a class="dropdown-item" href="#">Proxy Settings</a></li>
+                            <li><a class="dropdown-item" href="#">Server Endpoints</a></li>
+                             <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#">Security</a></li>
+                        </ul>
+                    </li>
+                    </ul>
+                 <div class="navbar-controls d-flex align-items-center">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="themeToggle" onchange="toggleTheme()" aria-label="Toggle dark mode">
+                        <label class="form-check-label" for="themeToggle">
+                            <i class="fas fa-sun"></i> <i class="fas fa-moon d-none"></i>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="flex-grow-1">
+        <div class="container mt-4">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="mt-3">
+                        {% for category, message in messages %}
+                            <div class="alert
+                                        {{ 'alert-danger' if category == 'error' else
+                                           'alert-success' if category == 'success' else
+                                           'alert-warning' if category == 'warning' else
+                                           'alert-info' }}
+                                        alert-dismissible fade show" role="alert">
+                                <i class="fas {{ 'fa-exclamation-triangle me-2' if category == 'error' else
+                                       'fa-check-circle me-2' if category == 'success' else
+                                       'fa-exclamation-triangle me-2' if category == 'warning' else
+                                       'fa-info-circle me-2' }}"></i>
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+
+    <footer class="main-footer" role="contentinfo">
+        <div class="container-fluid">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="footer-left">
+                     <a href="https://github.com/YOUR_USERNAME/FHIRVINE" target="_blank" rel="noreferrer" aria-label="Project Github">FHIRVINE Github</a>
+                    <a href="/about" aria-label="About FHIRVINE">About FHIRVINE</a>
+                     <a href="https://www.hl7.org/fhir/smart-app-launch/" target="_blank" rel="noreferrer" aria-label="SMART on FHIR">SMART on FHIR</a>
+                </div>
+                <div class="footer-right">
+                     <a href="https://github.com/YOUR_USERNAME/FHIRVINE/issues" target="_blank" rel="noreferrer" aria-label="Report Issue">Report Issue</a>
+                    <a href="https://github.com/YOUR_USERNAME" aria-label="Developer">Developer</a>
+                    </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    <script>
+        function toggleTheme() {
+            const html = document.documentElement;
+            const toggle = document.getElementById('themeToggle');
+            const sunIcon = document.querySelector('.fa-sun');
+            const moonIcon = document.querySelector('.fa-moon');
+            const isDark = toggle.checked;
+
+            html.setAttribute('data-theme', isDark ? 'dark' : 'light');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            document.cookie = `theme=${isDark ? 'dark' : 'light'}; path=/; max-age=31536000; SameSite=Lax`; // Added SameSite
+
+            if (sunIcon && moonIcon) {
+                sunIcon.classList.toggle('d-none', isDark);
+                moonIcon.classList.toggle('d-none', !isDark);
+            }
+             // Optional: Dispatch a custom event for other components to listen to
+             // window.dispatchEvent(new CustomEvent('themeChanged', { detail: { theme: isDark ? 'dark' : 'light' } }));
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Prioritize localStorage, then cookie, then system preference
+            let currentTheme = localStorage.getItem('theme');
+            if (!currentTheme) {
+                const cookieMatch = document.cookie.match(/theme=(dark|light)/);
+                currentTheme = cookieMatch ? cookieMatch[1] : null;
+            }
+            if (!currentTheme) {
+                 currentTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            }
+
+            const themeToggle = document.getElementById('themeToggle');
+            const sunIcon = document.querySelector('.fa-sun');
+            const moonIcon = document.querySelector('.fa-moon');
+
+            if (currentTheme === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                if(themeToggle) themeToggle.checked = true;
+            } else {
+                 document.documentElement.removeAttribute('data-theme');
+                 if(themeToggle) themeToggle.checked = false;
+            }
+             // Update icons based on the final theme state
+             if (sunIcon && moonIcon) {
+                  sunIcon.classList.toggle('d-none', currentTheme === 'dark');
+                  moonIcon.classList.toggle('d-none', currentTheme !== 'dark');
+             }
+
+
+            // Initialize tooltips
+            const tooltips = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+            tooltips.forEach(t => new bootstrap.Tooltip(t));
+        });
+
+         // Listener for system theme changes
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+             // Only change if no theme explicitly set by user (via localStorage or cookie)
+             if (!localStorage.getItem('theme') && !document.cookie.includes('theme=')) {
+                  const newColorScheme = event.matches ? "dark" : "light";
+                  document.documentElement.setAttribute('data-theme', newColorScheme);
+                  const themeToggle = document.getElementById('themeToggle');
+                  if (themeToggle) themeToggle.checked = (newColorScheme === 'dark');
+                  // Update icons
+                   const sunIcon = document.querySelector('.fa-sun');
+                   const moonIcon = document.querySelector('.fa-moon');
+                  if (sunIcon && moonIcon) {
+                       sunIcon.classList.toggle('d-none', newColorScheme === 'dark');
+                       moonIcon.classList.toggle('d-none', newColorScheme !== 'dark');
+                  }
+
+             }
+        });
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

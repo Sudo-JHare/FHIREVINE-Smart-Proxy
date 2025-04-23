@@ -1,0 +1,65 @@
+Designing for FHIRFLARE Integration
+To ensure FHIRVINE can be a module or plugin proxy for FHIRFLARE (per your GitHub repo: https://github.com/Sudo-JHare/FHIRFLARE-IG-Toolkit, April 12–18, 2025), the updated smart_proxy.py is designed as a standalone Blueprint. To integrate into FHIRFLARE:
+
+Import the Blueprint:
+In FHIRFLARE’s app.py, register the smart_blueprint:
+python
+
+Copy
+from fhirvine.smart_proxy import smart_blueprint, configure_oauth
+app.register_blueprint(smart_blueprint, url_prefix='/oauth2')
+configure_oauth(app, db=database, registered_app_model=RegisteredApp, oauth_token_model=OAuthToken)
+Ensure FHIRFLARE’s models.py includes RegisteredApp and OAuthToken or equivalent models.
+Configuration:
+Use environment variables for FHIRVINE-specific settings (e.g., FHIR_SERVER_URL, OAUTH2_TOKEN_EXPIRES_IN) in .env:
+text
+
+Copy
+FHIR_SERVER_URL=http://placeholder-fhir-server.com/fhir
+OAUTH2_TOKEN_EXPIRES_IN=3600
+Load in FHIRFLARE’s app.py using python-dotenv.
+Template Integration:
+Copy FHIRVINE’s templates (consent.html, auth_error.html) to FHIRFLARE’s templates/auth/ or configure smart_blueprint.template_folder to point to FHIRVINE’s templates directory.
+Update FHIRFLARE’s base.html to include FHIRVINE routes (e.g., /oauth2/authorize) in the navbar if needed.
+Database:
+Use FHIRFLARE’s SQLite database (instance/flarefhir.db, per April 12, 2025) by passing it to configure_oauth.
+Run migrations to add registered_apps and oauth_tokens tables:
+bash
+
+Copy
+docker-compose exec flarefhir flask db migrate -m "Add FHIRVINE tables"
+docker-compose exec flarefhir flask db upgrade
+Testing:
+Test FHIRVINE routes within FHIRFLARE (e.g., http://localhost:5000/oauth2/authorize if FHIRFLARE runs on port 5000).
+Ensure FHIRFLARE’s UI (e.g., fhir_ui_operations.html, April 16–17, 2025) can trigger FHIRVINE’s OAuth2 flow for app launches.
+Troubleshooting
+Error Persists:
+Add debug logging in RegisteredApp.check_response_type:
+python
+
+Copy
+def check_response_type(self, response_type):
+    logger.debug(f"Checking response_type: {response_type}")
+    return response_type == 'code'
+Check session data in /consent:
+python
+
+Copy
+logger.debug(f"Session data: {session}")
+Verify request_params contains response_type=code.
+Redirect Fails:
+Confirm https://httpbin.org/get is in redirect_uris:
+bash
+
+Copy
+docker-compose exec fhirvine sqlite3 /app/instance/fhirvine.db "SELECT redirect_uris FROM registered_apps WHERE client_id = 'fRnWBBuEBNF_mkH09nZdBA2_lwekV-_H';"
+Ensure scope=openid launch/patient matches registered scopes.
+Token Exchange Fails:
+Verify client_secret matches the hashed value in client_secret_hashed.
+Check code validity (expires in 600 seconds).
+Addressing Prior Context
+FHIRFLARE Integration: Your work on FHIRFLARE-IG-Toolkit (April 12–18, 2025) uses a similar Flask structure (app.py, templates/, SQLite). FHIRVINE’s Blueprint design mirrors FHIRFLARE’s modular routes (e.g., fhir_ig_importer, April 13, 2025), ensuring easy integration.
+Security: Hashing client_secret (April 22, 2025) aligns with FHIRFLARE’s security practices (March 25, 2025).
+UI: FHIRVINE’s templates (consent.html) use Bootstrap, matching FHIRFLARE’s UI (e.g., fhir_ui_operations.html, April 17, 2025).
+FHIR Server: The aud=http://placeholder-fhir-server.com/fhir suggests a mock server. If using HAPI FHIR (April 16, 2025), update to its metadata endpoint.
+Questions for Next Steps

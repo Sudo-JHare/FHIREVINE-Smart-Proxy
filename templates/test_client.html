@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h2 class="text-center mb-0">Test SMART Client Launch</h2>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted text-center small mb-4">
+                        Select a registered application to test its SMART on FHIR launch.
+                    </p>
+                    <form method="POST" action="{{ url_for('test_client') }}" novalidate>
+                        {{ form.hidden_tag() }}
+
+                        <div class="mb-3">
+                            {{ form.client_id.label(class="form-label") }}
+                            <select name="client_id" class="form-control {{ 'is-invalid' if form.client_id.errors else '' }}" required>
+                                <option value="" disabled selected>Select an application</option>
+                                {% for app in apps %}
+                                    <option value="{{ app.client_id }}">{{ app.app_name }} ({{ app.client_id }})</option>
+                                {% endfor %}
+                            </select>
+                            {% if form.client_id.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.client_id.errors %}<span>{{ error }}</span>{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="d-grid gap-2 mt-4">
+                            {{ form.submit(class="btn btn-primary btn-lg") }}
+                            <a href="{{ url_for('app_gallery') }}" class="btn btn-outline-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

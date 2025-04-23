@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow">
+                <div class="card-header text-center">
+                    <h3><i class="bi bi-shield-check me-2"></i>Authorize Application</h3>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        {% if client.logo_uri %}
+                            <img src="{{ client.logo_uri }}" alt="{{ client.app_name }} Logo" style="max-width: 80px; max-height: 80px; object-fit: contain; margin-bottom: 1rem;">
+                        {% else %}
+                            <i class="bi bi-app-indicator" style="font-size: 4rem; color: #ccc;"></i>
+                        {% endif %}
+                        <h5 class="card-title mt-2">{{ client.app_name }}</h5>
+                        <p class="text-muted">is requesting permission to access your data.</p>
+                    </div>
+
+                    <p>This application is requesting the following permissions (scopes):</p>
+                    <ul class="list-group list-group-flush mb-4">
+                        {% for scope in scopes %}
+                            <li class="list-group-item">
+                                <i class="bi bi-key-fill text-secondary me-2"></i>
+                                {{ scope }}
+                                {# Add descriptions for common scopes later #}
+                            </li>
+                        {% else %}
+                             <li class="list-group-item text-warning">No specific scopes requested.</li>
+                        {% endfor %}
+                    </ul>
+
+                     {# Display other request parameters like launch context if available #}
+                     {% if request_params.launch %}
+                     <div class="alert alert-info small">
+                         <strong>Launch Context:</strong> <code>{{ request_params.launch }}</code>
+                     </div>
+                     {% endif %}
+                     {% if request_params.aud %}
+                     <div class="alert alert-secondary small">
+                         <strong>Audience (FHIR Server):</strong> <code>{{ request_params.aud }}</code>
+                     </div>
+                     {% endif %}
+
+                    <form method="POST" action="{{ url_for('smart_proxy.handle_consent') }}">
+                        {# Include the auth_code_id as a hidden field #}
+                        <input type="hidden" name="auth_code_id" value="{{ auth_code_id }}">
+                        {# We don't need CSRF here as the state is handled by Authlib #}
+                        <div class="d-grid gap-2">
+                            <button type="submit" name="consent" value="allow" class="btn btn-primary btn-lg">
+                                <i class="bi bi-check-circle-fill me-1"></i> Allow Access
+                            </button>
+                            <button type="submit" name="consent" value="deny" class="btn btn-outline-danger btn-lg">
+                                <i class="bi bi-x-circle-fill me-1"></i> Deny Access
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                 <div class="card-footer text-muted small text-center">
+                     You will be redirected back to the application after making a choice.
+                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Registered Applications</h1>
+        <a href="{{ url_for('register_app') }}" class="btn btn-success">
+            <i class="bi bi-plus-circle-fill me-1"></i> Register New App
+        </a>
+    </div>
+
+    {% if apps %}
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        {% for app in apps %}
+        <div class="col">
+            <div class="card h-100 shadow-sm">
+                {% if app.logo_uri %}
+                <img src="{{ app.logo_uri }}" class="card-img-top mt-3 mx-auto" alt="{{ app.app_name }} Logo" style="width: 80px; height: 80px; object-fit: contain;">
+                {% else %}
+                <div class="text-center mt-3">
+                     <i class="bi bi-app-indicator" style="font-size: 5rem; color: #ccc;"></i> {# Placeholder Icon #}
+                </div>
+                {% endif %}
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title text-center">{{ app.app_name }}</h5>
+                    <p class="card-text text-muted small">
+                        <strong>Client ID:</strong> <code class="user-select-all">{{ app.client_id }}</code><br>
+                        {# Do NOT display client secret here #}
+                         <strong>Registered:</strong> {{ app.date_registered.strftime('%Y-%m-%d %H:%M') if app.date_registered else 'N/A' }}<br>
+                         {% if app.last_updated %}
+                         <strong>Updated:</strong> {{ app.last_updated.strftime('%Y-%m-%d %H:%M') }}
+                         {% endif %}
+                    </p>
+                     <ul class="list-group list-group-flush small flex-grow-1 mb-3">
+                        <li class="list-group-item px-0">
+                            <strong>Redirect URIs:</strong>
+                            <ul class="list-unstyled ms-2">
+                            {% for uri in app.redirect_uris.split() %}
+                                <li><code class="user-select-all" style="word-break: break-all;">{{ uri }}</code></li>
+                            {% else %}
+                                <li><span class="text-danger">None configured</span></li>
+                            {% endfor %}
+                            </ul>
+                        </li>
+                         <li class="list-group-item px-0">
+                             <strong>Allowed Scopes:</strong>
+                             <div>
+                                {% for scope in app.scopes.split() %}
+                                    <span class="badge bg-secondary me-1 mb-1">{{ scope }}</span>
+                                {% else %}
+                                     <span class="text-danger">None configured</span>
+                                {% endfor %}
+                             </div>
+                         </li>
+                         {% if app.contacts %}
+                         <li class="list-group-item px-0"><strong>Contacts:</strong> {{ app.contacts }}</li>
+                         {% endif %}
+                    </ul>
+                    <div class="mt-auto d-flex justify-content-end gap-2">
+                        <a href="{{ url_for('edit_app', app_id=app.id) }}" class="btn btn-sm btn-outline-primary">Edit</a>
+                        <a href="{{ url_for('delete_app', app_id=app.id) }}" class="btn btn-sm btn-outline-danger">Delete</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="alert alert-info text-center" role="alert">
+        <i class="bi bi-info-circle-fill me-2"></i> No applications have been registered yet.
+        <a href="{{ url_for('register_app') }}" class="alert-link ms-2">Register the first one!</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

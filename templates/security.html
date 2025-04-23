@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}Security Settings - {{ site_name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <h1 class="text-center mb-4">Security Settings</h1>
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5>Security Features</h5>
+                    <ul class="list-group">
+                        <li class="list-group-item"><strong>Client Secret Hashing:</strong> Enabled (uses PBKDF2-SHA256)</li>
+                        <li class="list-group-item"><strong>PKCE Support:</strong> Enabled (S256 method supported)</li>
+                        <li class="list-group-item"><strong>Token Expiration:</strong> Access tokens expire in 3600 seconds (1 hour)</li>
+                    </ul>
+                    <p class="mt-3 text-muted">Security settings are managed via application configuration. Contact the administrator to modify these settings.</p>
+                    <a href="{{ url_for('index') }}" class="btn btn-primary">Back to Home</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

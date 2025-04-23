@@ -1,0 +1,26 @@
+# docker-compose.yml for FHIRVINE
+
+services:
+  fhirvine:
+    build: . # Build the image from the Dockerfile in the current directory
+    container_name: fhirvine_app # Optional: Assign a specific name
+    ports:
+      - "5001:5001" # Map host port 5001 to container port 5001 (where Waitress listens)
+    volumes:
+      # Mount the instance directory (for DB) using a named volume
+      - fhirvine_instance:/app/instance
+      # Mount the migrations directory using a named volume
+      - fhirvine_migrations:/app/migrations # <-- ADDED THIS LINE
+    environment:
+      # Load environment variables from a .env file in the same directory as docker-compose.yml
+      - FLASK_ENV=${FLASK_ENV:-development} # Default to development if not set in .env
+      # SECRET_KEY should be set in your .env file for security
+    env_file:
+      - .env # Load variables from .env file
+    restart: unless-stopped # Optional: Restart policy
+
+# Define the named volumes
+volumes:
+  fhirvine_instance:
+  fhirvine_migrations: # <-- ADDED THIS LINE
+
