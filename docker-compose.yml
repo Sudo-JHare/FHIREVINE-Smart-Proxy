@@ -1,4 +1,4 @@
-# docker-compose.yml for FHIRVINE
+version: '3.8'
 
 services:
   fhirvine:
@@ -9,13 +9,23 @@ services:
     volumes:
       - fhirvine_instance:/app/instance
       - fhirvine_migrations:/app/migrations
+      - ./setup/migrations:/app/setup_migrations
+      - ./setup/fhirvine.db:/app/setup_fhirvine.db
+      - ./static:/app/static
+      - ./templates:/app/templates
     environment:
       - FLASK_ENV=${FLASK_ENV:-development}
     env_file:
       - .env
     command: >
-      sh -c "flask db upgrade && waitress-serve --host=0.0.0.0 --port=5001 --call 'app:create_app'"
+      sh -c "echo 'Checking for setup migrations directory...' && ls -la /app/setup_migrations && if [ ! -d /app/migrations ]; then echo 'Copying migrations directory...' && cp -rv /app/setup_migrations /app/migrations && chown -R 1000:1000 /app/migrations && ls -la /app/migrations || { echo 'Failed to copy migrations'; exit 1; }; fi && if [ ! -f /app/instance/fhirvine.db ]; then echo 'Copying database file...' && cp -v /app/setup_fhirvine.db /app/instance/fhirvine.db && chown -R 1000:1000 /app/instance && ls -la /app/instance || { echo 'Failed to copy database'; exit 1; }; fi && echo 'Starting application...' && waitress-serve --host=0.0.0.0 --port=5001 --call 'app:create_app'"
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5001/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
 
 volumes:
   fhirvine_instance:
