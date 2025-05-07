@@ -1,4 +1,5 @@
 # FHIRVINE SMART Proxy
+![FHIRFLARE Logo](static/FHIRVINE_LOGO.png)
 
 ## Overview
 
