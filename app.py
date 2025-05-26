@@ -71,7 +71,7 @@ def create_app():
         },
         "host": "localhost:5001",
         "basePath": "/oauth2",
-        "schemes": ["http"]
+        "schemes": ["https"]
     }
     swagger_config = {
         "specs": [
@@ -106,18 +106,15 @@ def create_app():
 
     def get_config_value(key, default):
         try:
-            # Ensure the session is fresh
             database.session.expire_all()
             config = Configuration.query.filter_by(key=key).first()
             if config:
                 logger.debug(f"Retrieved {key} from database (exact match): {config.value}")
                 return int(config.value) if key in ['TOKEN_DURATION', 'PROXY_TIMEOUT', 'REFRESH_TOKEN_DURATION'] else config.value
-            # Try case-insensitive match
             config = Configuration.query.filter(Configuration.key.ilike(key)).first()
             if config:
                 logger.debug(f"Retrieved {key} from database (case-insensitive match): {config.value}")
                 return int(config.value) if key in ['TOKEN_DURATION', 'PROXY_TIMEOUT', 'REFRESH_TOKEN_DURATION'] else config.value
-            # Fallback: Direct database query
             result = database.session.execute(
                 text("SELECT value FROM configurations WHERE key = :key"),
                 {"key": key}
@@ -235,6 +232,23 @@ def create_app():
         response_data = None
         response_mode = session.get('response_mode', 'inline')
         logger.debug(f"Session contents before form submission: {session}")
+
+        try:
+            smart_config_url = url_for('smart_proxy.smart_configuration', _external=True)
+            response = requests.get(smart_config_url)
+            response.raise_for_status()
+            smart_config = response.json()
+            logger.debug(f"SMART configuration for test client: {smart_config}")
+        except requests.RequestException as e:
+            logger.error(f"Error fetching SMART configuration: {e}")
+            flash(f"Error fetching SMART configuration: {e}", "error")
+            smart_config = {
+                'authorization_endpoint': url_for('smart_proxy.authorize', _external=True),
+                'scopes_supported': current_app.config['ALLOWED_SCOPES'].split(),
+                'response_types_supported': ['code'],
+                'code_challenge_methods_supported': ['S256']
+            }
+
         if form.validate_on_submit():
             client_id = form.client_id.data
             app = RegisteredApp.query.filter_by(client_id=client_id).first()
@@ -243,29 +257,35 @@ def create_app():
                 return redirect(url_for('test_client'))
             response_mode = form.response_mode.data if hasattr(form, 'response_mode') and form.response_mode.data else 'inline'
             session['response_mode'] = response_mode
-            scopes = ' '.join(set(app.scopes.split()))
+
+            app_scopes = set(app.scopes.split())
+            supported_scopes = set(smart_config.get('scopes_supported', []))
+            scopes = ' '.join(app_scopes.intersection(supported_scopes))
+            if not scopes:
+                flash("No valid scopes available for this client.", "error")
+                return redirect(url_for('test_client'))
+
             code_verifier = secrets.token_urlsafe(32)
             code_challenge = base64.urlsafe_b64encode(
                 hashlib.sha256(code_verifier.encode('ascii')).digest()
             ).decode('ascii').rstrip('=')
             session['code_verifier'] = code_verifier
             redirect_uri = app.get_default_redirect_uri().lower()
-            auth_url = url_for(
-                'smart_proxy.authorize',
-                client_id=client_id,
-                redirect_uri=redirect_uri,
-                scope=scopes,
-                response_type='code',
-                state='test_state_123',
-                aud=current_app.config['FHIR_SERVER_URL'] + current_app.config['METADATA_ENDPOINT'],
-                code_challenge=code_challenge,
-                code_challenge_method='S256',
-                _external=True
-            )
-            logger.info(f"Redirecting to authorization URL for client '{client_id}'")
-            logger.info(f"Code verifier for client '{client_id}': {code_verifier}")
+            auth_url = smart_config.get('authorization_endpoint', url_for('smart_proxy.authorize', _external=True))
+            auth_params = {
+                'client_id': client_id,
+                'redirect_uri': redirect_uri,
+                'scope': scopes,
+                'response_type': 'code',
+                'state': 'test_state_123',
+                'aud': current_app.config['FHIR_SERVER_URL'] + current_app.config['METADATA_ENDPOINT'],
+                'code_challenge': code_challenge,
+                'code_challenge_method': 'S256'
+            }
+            logger.info(f"Constructing auth URL: {auth_url} with params: {auth_params}")
             session['post_auth_redirect'] = redirect_uri
-            return redirect(auth_url)
+            return redirect(f"{auth_url}?{'&'.join(f'{k}={v}' for k, v in auth_params.items())}")
+
         if 'code' in request.args and 'state' in request.args:
             code = request.args.get('code')
             state = request.args.get('state')
@@ -288,6 +308,7 @@ def create_app():
                     finally:
                         session.pop('post_auth_redirect', None)
                         session.pop('response_mode', None)
+
         try:
             apps = RegisteredApp.query.filter(
                 (RegisteredApp.is_test_app == False) |
@@ -299,7 +320,8 @@ def create_app():
             logger.error(f"Error fetching apps for test client: {e}", exc_info=True)
             flash("Could not load applications. Please try again later.", "error")
             apps = []
-        return render_template('test_client.html', form=form, apps=apps, response_data=response_data, response_mode=response_mode)
+
+        return render_template('test_client.html', form=form, apps=apps, response_data=response_data, response_mode=response_mode, smart_config=smart_config)
 
     @app.route('/test-server', methods=['GET', 'POST'])
     def test_server():
@@ -312,42 +334,76 @@ def create_app():
 
         form = ServerTestForm()
         response_data = None
+
+        try:
+            smart_config_url = url_for('smart_proxy.smart_configuration', _external=True)
+            response = requests.get(smart_config_url)
+            response.raise_for_status()
+            smart_config = response.json()
+            logger.debug(f"SMART configuration for test server: {smart_config}")
+        except requests.RequestException as e:
+            logger.error(f"Error fetching SMART configuration: {e}")
+            flash(f"Error fetching SMART configuration: {e}", "error")
+            smart_config = {
+                'authorization_endpoint': url_for('smart_proxy.authorize', _external=True),
+                'scopes_supported': current_app.config['ALLOWED_SCOPES'].split(),
+                'response_types_supported': ['code'],
+                'code_challenge_methods_supported': ['S256']
+            }
+
         if form.validate_on_submit():
             try:
                 client_id = form.client_id.data
                 client_secret = form.client_secret.data
                 redirect_uri = form.redirect_uri.data
-                scopes = ' '.join(set(form.scopes.data.split()))
+
+                requested_scopes = set(form.scopes.data.split())
+                supported_scopes = set(smart_config.get('scopes_supported', []))
+                valid_scopes = requested_scopes.intersection(supported_scopes)
+                if not valid_scopes:
+                    flash("No valid scopes provided.", "error")
+                    return render_template('test_server.html', form=form, response_data=response_data, smart_config=smart_config)
+                scopes = ' '.join(valid_scopes)
+
+                app = RegisteredApp.query.filter_by(client_id=client_id).first()
+                if not app or not app.check_client_secret(client_secret):
+                    flash("Invalid client ID or secret.", "error")
+                    return render_template('test_server.html', form=form, response_data=response_data, smart_config=smart_config)
+
+                if not app.check_redirect_uri(redirect_uri):
+                    flash("Invalid redirect URI for this client.", "error")
+                    return render_template('test_server.html', form=form, response_data=response_data, smart_config=smart_config)
+
                 code_verifier = secrets.token_urlsafe(32)
                 code_challenge = base64.urlsafe_b64encode(
                     hashlib.sha256(code_verifier.encode('ascii')).digest()
                 ).decode('ascii').rstrip('=')
                 session['server_test_code_verifier'] = code_verifier
                 session['server_test_client_secret'] = client_secret
-                auth_url = url_for(
-                    'smart_proxy.authorize',
-                    client_id=client_id,
-                    redirect_uri=redirect_uri,
-                    scope=scopes,
-                    response_type='code',
-                    state='server_test_state',
-                    aud=current_app.config['FHIR_SERVER_URL'] + current_app.config['METADATA_ENDPOINT'],
-                    code_challenge=code_challenge,
-                    code_challenge_method='S256',
-                    _external=True
-                )
+                auth_url = smart_config.get('authorization_endpoint', url_for('smart_proxy.authorize', _external=True))
+                auth_params = {
+                    'client_id': client_id,
+                    'redirect_uri': redirect_uri,
+                    'scope': scopes,
+                    'response_type': 'code',
+                    'state': 'server_test_state',
+                    'aud': current_app.config['FHIR_SERVER_URL'] + current_app.config['METADATA_ENDPOINT'],
+                    'code_challenge': code_challenge,
+                    'code_challenge_method': 'S256'
+                }
                 session['server_test_redirect_uri'] = redirect_uri
-                return redirect(auth_url)
+                return redirect(f"{auth_url}?{'&'.join(f'{k}={v}' for k, v in auth_params.items())}")
             except Exception as e:
                 flash(f"Error initiating authorization: {e}", "error")
                 logger.error(f"Error in test-server: {e}", exc_info=True)
+
         if 'code' in request.args and 'state' in request.args and request.args.get('state') == 'server_test_state':
             code = request.args.get('code')
             redirect_uri = session.get('server_test_redirect_uri')
             client_secret = session.get('server_test_client_secret')
             code_verifier = session.get('server_test_code_verifier')
             if redirect_uri and client_secret and code_verifier:
-                token_url = url_for('smart_proxy.issue_token', _external=True)
+                token_url = smart_config.get('token_endpoint', url_for('smart_proxy.issue_token', _external=True))
                 token_data = {
                     'grant_type': 'authorization_code',
                     'code': code,
@@ -369,7 +425,8 @@ def create_app():
                     session.pop('server_test_redirect_uri', None)
                     session.pop('server_test_client_secret', None)
                     session.pop('server_test_code_verifier', None)
-        return render_template('test_server.html', form=form, response_data=response_data)
+
+        return render_template('test_server.html', form=form, response_data=response_data, smart_config=smart_config)
 
     @app.route('/configure/security', methods=['GET', 'POST'])
     def security_settings():
@@ -382,14 +439,10 @@ def create_app():
             'refresh_token_duration': refresh_token_duration,
             'allowed_scopes': allowed_scopes
         }
-        logger.debug(f"Security form data: {form_data}")
         form.process(data=form_data)
-        # Fallback: Directly set form field values
         form.token_duration.data = token_duration
         form.refresh_token_duration.data = refresh_token_duration
         form.allowed_scopes.data = allowed_scopes
-        logger.debug(f"Security form fields after process: {list(form._fields.keys())}")
-        logger.debug(f"Security form values before render: token_duration={form.token_duration.data}, refresh_token_duration={form.refresh_token_duration.data}, allowed_scopes={form.allowed_scopes.data}")
         if form.validate_on_submit():
             try:
                 configs = [
@@ -423,13 +476,9 @@ def create_app():
             'fhir_server_url': fhir_server_url,
             'proxy_timeout': proxy_timeout
         }
-        logger.debug(f"Proxy settings form data: {form_data}")
         form.process(data=form_data)
-        # Fallback: Directly set form field values
         form.fhir_server_url.data = fhir_server_url
         form.proxy_timeout.data = proxy_timeout
-        logger.debug(f"Proxy settings form fields after process: {list(form._fields.keys())}")
-        logger.debug(f"Proxy settings form values before render: fhir_server_url={form.fhir_server_url.data}, proxy_timeout={form.proxy_timeout.data}")
         if form.validate_on_submit():
             try:
                 configs = [
@@ -451,7 +500,7 @@ def create_app():
                 database.session.rollback()
                 logger.error(f"Error updating proxy settings: {e}", exc_info=True)
                 flash(f"Error updating proxy settings: {e}", "error")
-        return render_template('configure/proxy_settings.html', form=form, fhir_server_url=app.config['FHIR_SERVER_URL'])
+        return render_template('configure/proxy_settings.html', form=form)
 
     @app.route('/configure/server-endpoints', methods=['GET', 'POST'])
     def server_endpoints():
@@ -464,14 +513,10 @@ def create_app():
             'capability_endpoint': capability_endpoint,
             'resource_base_endpoint': resource_base_endpoint
         }
-        logger.debug(f"Server endpoints form data: {form_data}")
         form.process(data=form_data)
-        # Fallback: Directly set form field values
         form.metadata_endpoint.data = metadata_endpoint
         form.capability_endpoint.data = capability_endpoint
         form.resource_base_endpoint.data = resource_base_endpoint
-        logger.debug(f"Server endpoints form fields after process: {list(form._fields.keys())}")
-        logger.debug(f"Server endpoints form values before render: metadata_endpoint={form.metadata_endpoint.data}, capability_endpoint={form.capability_endpoint.data}, resource_base_endpoint={form.resource_base_endpoint.data}")
         if form.validate_on_submit():
             try:
                 configs = [
@@ -508,6 +553,20 @@ def create_app():
                 flash(f"Error updating endpoint settings: {e}", "error")
         return render_template('configure/server_endpoints.html', form=form)
 
+    @app.route('/test-smart-config', methods=['GET'])
+    def test_smart_config():
+        try:
+            smart_config_url = url_for('smart_proxy.smart_configuration', _external=True)
+            response = requests.get(smart_config_url)
+            response.raise_for_status()
+            config_data = response.json()
+            logger.debug(f"SMART configuration fetched: {config_data}")
+            return render_template('test_smart_config.html', config_data=config_data)
+        except requests.RequestException as e:
+            logger.error(f"Error fetching SMART configuration: {e}")
+            flash(f"Error fetching SMART configuration: {e}", "error")
+            return render_template('test_smart_config.html', config_data=None)
+
     @app.route('/api-docs')
     @swag_from({
         'tags': ['Documentation'],
@@ -540,3 +599,7 @@ def create_app():
 
     logger.info("FHIRVINE Flask application created and configured.")
     return app
+
+if __name__ == '__main__':
+    app = create_app()
+    app.run(debug=True, port=5001)

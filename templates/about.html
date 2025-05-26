@@ -3,22 +3,27 @@
 {% block title %}About - {{ site_name }}{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
+<div class="container mt-4">
+    <h1 class="text-center mb-4">About FHIRVINE SMART Proxy</h1>
     <div class="row justify-content-center">
         <div class="col-md-8">
-            <h1 class="text-center mb-4">About {{ site_name }}</h1>
             <div class="card shadow-sm">
                 <div class="card-body">
-                    <p>{{ site_name }} is a SMART on FHIR SSO proxy designed to facilitate secure app integration with FHIR servers.</p>
+                    <p>FHIRVINE is a modular SMART on FHIR Single Sign-On (SSO) Proxy designed to facilitate secure authentication and authorization for FHIR-based applications.</p>
                     <h5>Features</h5>
                     <ul>
-                        <li>Secure OAuth2 authorization flows with PKCE support.</li>
-                        <li>App gallery for managing registered applications.</li>
-                        <li>Proxy FHIR API requests to backend servers.</li>
-                        <li>Light and dark theme support.</li>
+                        <li>Register and manage SMART on FHIR applications.</li>
+                        <li>Test client and server-side OAuth2 flows.</li>
+                        <li>Configure proxy settings and FHIR server endpoints.</li>
+                        <li>Support for PKCE and secure token management.</li>
                     </ul>
-                    <p>Built with Flask, Bootstrap, and Authlib. Learn more about SMART on FHIR at <a href="https://www.hl7.org/fhir/smart-app-launch/" target="_blank">HL7 SMART on FHIR</a>.</p>
-                    <a href="{{ url_for('index') }}" class="btn btn-primary">Back to Home</a>
+                    <h5>Developer</h5>
+                    <p>Developed by <a href="https://github.com/Sudo-JHare">Sudo-JHare</a>. Source code available on <a href="https://github.com/Sudo-JHare/FHIRVINE-Smart-Proxy">GitHub</a>.</p>
+                    <h5>Contact</h5>
+                    <p>Report issues or contribute at <a href="https://github.com/Sudo-JHare/FHIRVINE-Smart-Proxy/issues">GitHub Issues</a>.</p>
+                    <div class="text-center mt-4">
+                        <a href="{{ url_for('index') }}" class="btn btn-primary">Back to Home</a>
+                    </div>
                 </div>
             </div>
         </div>

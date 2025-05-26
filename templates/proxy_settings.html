@@ -1,18 +1,36 @@
 {% extends "base.html" %}
+{% from "_formhelpers.html" import render_field %}
 
 {% block title %}Proxy Settings - {{ site_name }}{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
+<div class="container mt-4">
     <div class="row justify-content-center">
-        <div class="col-md-8">
-            <h1 class="text-center mb-4">Proxy Settings</h1>
+        <div class="col-md-8 col-lg-6">
             <div class="card shadow-sm">
+                <div class="card-header">
+                    <h2 class="text-center mb-0">Proxy Settings</h2>
+                </div>
                 <div class="card-body">
-                    <h5>FHIR Server URL</h5>
-                    <p class="text-muted">Current FHIR Server: <code>{{ fhir_server_url }}</code></p>
-                    <p class="text-warning">Editing the FHIR server URL requires environment variable changes. Please update <code>FHIR_SERVER_URL</code> in your <code>.env</code> file and restart the application.</p>
-                    <a href="{{ url_for('index') }}" class="btn btn-primary">Back to Home</a>
+                    <p class="text-muted text-center small mb-4">
+                        Configure the upstream FHIR server and proxy settings.
+                    </p>
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ category }}">{{ message }}</div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+                    <form method="POST" action="{{ url_for('proxy_settings') }}" novalidate>
+                        {{ form.hidden_tag() }}
+                        {{ render_field(form.fhir_server_url, value=form.fhir_server_url.data) }}
+                        {{ render_field(form.proxy_timeout, value=form.proxy_timeout.data) }}
+                        <div class="d-grid gap-2 mt-4">
+                            {{ form.submit(class="btn btn-primary btn-lg") }}
+                            <a href="{{ url_for('index') }}" class="btn btn-outline-secondary btn-lg">Cancel</a>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
