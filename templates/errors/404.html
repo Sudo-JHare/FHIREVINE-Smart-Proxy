@@ -1,14 +1,18 @@
 {% extends "base.html" %}
 
+{% block title %}404 - Not Found - {{ site_name }}{% endblock %}
+
 {% block content %}
-<div class="container mt-5">
+<div class="container mt-4">
     <div class="row justify-content-center">
-        <div class="col-md-8 col-lg-6">
-            <div class="alert alert-warning text-center" role="alert">
-                <h4 class="alert-heading"><i class="bi bi-exclamation-triangle-fill me-2"></i>Page Not Found</h4>
-                <p>The page you are looking for does not exist.</p>
-                <hr>
-                <a href="{{ url_for('index') }}" class="btn btn-secondary">Return Home</a>
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <h1 class="display-1 text-danger">404</h1>
+                    <h2>Page Not Found</h2>
+                    <p class="text-muted mb-4">The page you're looking for doesn't exist or has been moved.</p>
+                    <a href="{{ url_for('index') }}" class="btn btn-primary">Return to Home</a>
+                </div>
             </div>
         </div>
     </div>

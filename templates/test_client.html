@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 
+{% block title %}Test Client Launch - {{ site_name }}{% endblock %}
+
 {% block content %}
 <div class="container mt-4">
     <div class="row justify-content-center">
@@ -12,6 +14,21 @@
                     <p class="text-muted text-center small mb-4">
                         Select a registered application to test its SMART on FHIR launch or register a test app.
                     </p>
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ category }}">{{ message }}</div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+                    {% if smart_config %}
+                        <h5 class="mb-3">SMART Configuration</h5>
+                        <pre class="border p-3 bg-light" style="max-height: 400px; overflow-y: auto;">
+{{ smart_config | tojson(indent=2) }}
+                        </pre>
+                    {% else %}
+                        <p class="text-danger mb-3">Could not load SMART configuration.</p>
+                    {% endif %}
                     <form method="POST" action="{{ url_for('test_client') }}" novalidate>
                         {{ form.hidden_tag() }}
                         <div class="mb-3">

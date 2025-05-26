@@ -1,14 +1,18 @@
 {% extends "base.html" %}
 
+{% block title %}500 - Server Error - {{ site_name }}{% endblock %}
+
 {% block content %}
-<div class="container mt-5">
+<div class="container mt-4">
     <div class="row justify-content-center">
-        <div class="col-md-8 col-lg-6">
-            <div class="alert alert-danger text-center" role="alert">
-                <h4 class="alert-heading"><i class="bi bi-exclamation-triangle-fill me-2"></i>Internal Server Error</h4>
-                <p>Something went wrong on our end. Please try again later.</p>
-                <hr>
-                <a href="{{ url_for('index') }}" class="btn btn-secondary">Return Home</a>
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <h1 class="display-1 text-danger">500</h1>
+                    <h2>Internal Server Error</h2>
+                    <p class="text-muted mb-4">Something went wrong on our end. Please try again later.</p>
+                    <a href="{{ url_for('index') }}" class="btn btn-primary">Return to Home</a>
+                </div>
             </div>
         </div>
     </div>

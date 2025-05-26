@@ -15,6 +15,13 @@
                     <p class="text-muted text-center small mb-4">
                         Configure endpoints for the upstream FHIR server and view available SMART endpoints.
                     </p>
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ category }}">{{ message }}</div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
                     <form method="POST" action="{{ url_for('server_endpoints') }}" novalidate>
                         {{ form.hidden_tag() }}
                         {{ render_field(form.metadata_endpoint) }}
@@ -28,7 +35,7 @@
                     <hr class="my-4">
                     <h5>Available SMART Endpoints</h5>
                     <ul class="list-group mb-4">
-                        <li class="list-group-item"><strong>Configuration:</strong> <code>/.well-known/smart-configuration</code> - SMART on FHIR discovery</li>
+                        <li class="list-group-item"><strong>Configuration:</strong> <code>/oauth2/.well-known/smart-configuration</code> - SMART on FHIR discovery</li>
                         <li class="list-group-item"><strong>Authorization:</strong> <code>/oauth2/authorize</code> - Initiate OAuth2 flow</li>
                         <li class="list-group-item"><strong>Token:</strong> <code>/oauth2/token</code> - Exchange code for token</li>
                         <li class="list-group-item"><strong>Revoke:</strong> <code>/oauth2/revoke</code> - Revoke tokens</li>

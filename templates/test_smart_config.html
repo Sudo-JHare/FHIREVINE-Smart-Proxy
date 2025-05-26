@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}Test SMART Configuration - {{ site_name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h2 class="text-center mb-0">Test SMART Configuration</h2>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted text-center small mb-4">
+                        Fetch and display the SMART on FHIR configuration from <code>/oauth2/.well-known/smart-configuration</code>.
+                    </p>
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ category }}">{{ message }}</div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+                    {% if config_data %}
+                        <h5>SMART Configuration</h5>
+                        <pre class="border p-3 bg-light" style="max-height: 400px; overflow-y: auto;">
+{{ config_data | tojson(indent=2) }}
+                        </pre>
+                    {% else %}
+                        <p class="text-danger">No configuration data available. Please try again.</p>
+                    {% endif %}
+                    <div class="d-grid gap-2 mt-4">
+                        <a href="{{ url_for('index') }}" class="btn btn-primary">Back to Home</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
