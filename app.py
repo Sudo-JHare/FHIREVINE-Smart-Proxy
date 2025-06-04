@@ -17,6 +17,7 @@ from sqlalchemy.exc import OperationalError
 from sqlalchemy import text
 from wtforms import StringField, URLField, SubmitField
 from wtforms.validators import DataRequired, URL
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
@@ -33,6 +34,7 @@ migrate = Migrate()
 
 def create_app():
     app = Flask(__name__, instance_relative_config=True)
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1, x_for=1)
     app.config.from_mapping(
         SECRET_KEY=os.environ.get('SECRET_KEY', 'dev-secret-key-for-fhirvine'),
         SQLALCHEMY_DATABASE_URI=os.environ.get('DATABASE_URL', f'sqlite:///{os.path.join(app.instance_path, "fhirvine.db")}'),
@@ -71,7 +73,7 @@ def create_app():
         },
         "host": "localhost:5001",
         "basePath": "/oauth2",
-        "schemes": ["http"]
+        "schemes": ["https"]
     }
     swagger_config = {
         "specs": [
@@ -579,6 +581,8 @@ def create_app():
         }
     })
     def custom_apidocs():
+        spec_url = url_for('flasgger.apispec_1', _external=True)
+        logger.debug(f"Swagger spec URL: {spec_url}")
         return render_template('swagger-ui.html')
 
     @app.route('/about')
