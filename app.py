@@ -71,7 +71,7 @@ def create_app():
         },
         "host": "localhost:5001",
         "basePath": "/oauth2",
-        "schemes": ["https"]
+        "schemes": ["http"]
     }
     swagger_config = {
         "specs": [
